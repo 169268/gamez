@@ -20,6 +20,7 @@ button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 18p
 button.s{background:var(--panel);color:var(--ink)}
 button.r{background:var(--red);color:#fff}
 button:disabled{opacity:.4}
+button,.cd,.em span{touch-action:manipulation}
 #er{color:#ffd0d0;min-height:1.3em;font-size:.9rem}
 .wrap{max-width:560px;margin:0 auto}
 .row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:8px 0}
@@ -61,6 +62,18 @@ button:disabled{opacity:.4}
 .ov[hidden]{display:none}
 .ov .box{margin:0;max-height:90vh;overflow-y:auto;text-align:right;background:#12333b;line-height:1.8;font-size:.95rem}
 .ov ol{padding-right:20px;margin:6px 0}
+#fab{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;z-index:12}
+#fab[hidden],#chat[hidden],#fb3[hidden]{display:none}
+#fab button{margin:0;border-radius:50%;width:48px;height:48px;padding:0;font-size:1.3rem;background:#000a;color:#fff}
+#fab button.on{background:var(--red)}
+#chat{position:fixed;left:0;right:0;bottom:0;max-width:560px;margin:auto;background:#0b2a31f5;border-radius:18px 18px 0 0;padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px));z-index:15;text-align:right}
+#cm{height:150px;overflow-y:auto;font-size:.88rem;line-height:1.7}
+.cr{display:flex;gap:6px;margin-top:6px}.cr input{margin:0;text-align:right;flex:1}.cr button{margin:0}
+.em{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:6px}.em span{font-size:1.6rem;cursor:pointer;padding:2px 4px}
+#fx{position:fixed;inset:18% 0 auto;pointer-events:none;z-index:13;display:flex;flex-direction:column;align-items:center;gap:6px}
+.tt{background:#000b;border-radius:16px;padding:6px 14px;animation:up 3.2s forwards}
+.tt.big{font-size:2.6rem;background:none;line-height:1.2}
+@keyframes up{0%{opacity:0;transform:translateY(20px)}10%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateY(-40px)}}
 </style>
 </head>
 <body>
@@ -79,6 +92,9 @@ button:disabled{opacity:.4}
 </div>
 <div id="g"></div>
 </div>
+<div id="fx"></div>
+<div id="fab" hidden><button id="fb1">💬</button><button id="fb2">🎙️</button><button id="fb3" hidden>🔈</button></div>
+<div id="chat" hidden><div id="cm"></div><div class="em" id="em"></div><div class="cr"><input id="ci" maxlength="80" placeholder="اكتب رسالة..."><button id="csn">ابعث</button></div></div>
 <div id="how" class="ov" hidden><div class="box">
 <h2 style="text-align:center;margin:0 0 6px;color:var(--gold)">كيفاش تلعب Gamez</h2>
 <ol>
@@ -98,13 +114,58 @@ button:disabled{opacity:.4}
 <script>
 var R=["1","2","3","4","5","6","7","8","9","10"],SU=["♦","♥","♠","♣"];
 var GS=["حكّ راسك","حطّ يدك على بوزك","تنحنح","غمّز بعينك اليمنى","حطّ يدك على كتفك","حرّك رجلك","خبّط بصباعك على الطاولة مرتين","عضّ شفتك","ابتسم ابتسامة صغيرة","حكّ ودنك"],showSg=0;
-var room=null,host=false,G=null,S=null,sel=null,cid=Math.random().toString(36).slice(2,10),myName="",code="",timer=null;
+var room=null,host=false,G=null,S=null,sel=null,cid="u"+Array.from(crypto.getRandomValues(new Uint8Array(10))).map(function(b){return b.toString(36)}).join(""),pid=Math.random().toString(36).slice(2,8),myName="",code="",timer=null;
 var $=function(i){return document.getElementById(i)};
 function err(t){$("er").textContent=t||""}
 function four(h){return h.length==4&&h.every(function(c){return c%10==h[0]%10})}
 function cs(c){return R[c%10]+SU[Math.floor(c/10)]}
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
 
+/* ---------- chat / emoji / voice ---------- */
+var EM=["😂","😡","😎","😱","👏","🔥","🤝","😴","🤨","🏆","❤️","🙏"],seen=null,vs=null,pcs={},pq={},muted=false;
+function esc(t){return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function toast(h,big){var d=document.createElement("div");d.className="tt"+(big?" big":"");d.innerHTML=h;$("fx").appendChild(d);setTimeout(function(){d.remove()},3300)}
+$("em").innerHTML=EM.map(function(e){return "<span>"+e+"</span>"}).join("");
+function sendChat(x){x=String(x).trim();if(x&&room)act({t:"chat",x:x})}
+function sendTxt(){var i=$("ci");sendChat(i.value);i.value=""}
+$("fb1").onclick=function(){var c=$("chat");c.hidden=!c.hidden;$("cm").scrollTop=$("cm").scrollHeight};
+$("csn").onclick=sendTxt;$("ci").onkeydown=function(e){if(e.key=="Enter")sendTxt()};
+$("em").onclick=function(e){if(e.target.tagName=="SPAN"){sendChat(e.target.textContent);toast(e.target.textContent,1)}};
+function renderChat(){
+var ch=(S&&S.ch)||[],me=S?S.i.indexOf(cid):-1;if(me<0)return;
+$("fab").hidden=false;
+var b=$("cm"),end=b.scrollTop+b.clientHeight>=b.scrollHeight-8;
+b.innerHTML=ch.map(function(m){return '<div class="le '+(m.k%2==me%2?"tm":"op")+'"><b>'+(m.k==me?"إنت":esc(S.p[m.k]||""))+':</b> '+esc(m.x)+"</div>"}).join("");
+if(end)b.scrollTop=b.scrollHeight;
+if(seen===null){seen={};ch.forEach(function(m){seen[m.id]=1})}
+ch.forEach(function(m){if(seen[m.id])return;seen[m.id]=1;if(m.k==me)return;var n=esc(S.p[m.k]||"");toast(EM.indexOf(m.x)>=0?'<div style="font-size:.8rem">'+n+"</div>"+m.x:n+": "+esc(m.x),EM.indexOf(m.x)>=0)})
+}
+/* voice (WebRTC mesh) */
+function rt(to,m){m.f=pid;m.to=to;room.emit("rtc",m).catch(function(){})}
+async function vJoin(){
+if(vs||!room)return;
+try{vs=await navigator.mediaDevices.getUserMedia({audio:true})}catch(e){toast("المايك ما خدمش: خلّي المتصفح يستعملو");return}
+$("fb2").classList.add("on");$("fb3").hidden=false;toast("المايك شعل 🎙️");
+room.emit("rtc",{t:"hi",f:pid}).catch(function(){});
+}
+$("fb2").onclick=vJoin;
+$("fb3").onclick=function(){muted=!muted;vs.getAudioTracks().forEach(function(t){t.enabled=!muted});this.textContent=muted?"🔇":"🔈"};
+function gp(id){
+if(pcs[id])return pcs[id];
+var pc=new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});pcs[id]=pc;pq[id]=[];
+vs.getTracks().forEach(function(t){pc.addTrack(t,vs)});
+pc.onicecandidate=function(e){if(e.candidate)rt(id,{t:"ice",d:e.candidate})};
+pc.ontrack=function(e){var a=document.getElementById("a"+id);if(!a){a=document.createElement("audio");a.id="a"+id;a.autoplay=true;document.body.appendChild(a)}a.srcObject=e.streams[0];a.play().catch(function(){})};
+pc.onconnectionstatechange=function(){if(pc.connectionState=="failed"||pc.connectionState=="closed"){delete pcs[id]}};
+return pc}
+async function onRtc(m){
+if(!m||!vs||m.f==pid||(m.to&&m.to!=pid))return;
+var id=m.f,pc;
+if(m.t=="hi"||m.t=="hey"){if(m.t=="hi")rt(id,{t:"hey"});if(pid<id&&!pcs[id]){pc=gp(id);await pc.setLocalDescription(await pc.createOffer());rt(id,{t:"sdp",d:pc.localDescription})}return}
+pc=gp(id);
+if(m.t=="sdp"){await pc.setRemoteDescription(m.d);(pq[id]||[]).forEach(function(c){pc.addIceCandidate(c).catch(function(){})});pq[id]=[];if(m.d.type=="offer"){await pc.setLocalDescription(await pc.createAnswer());rt(id,{t:"sdp",d:pc.localDescription})}}
+if(m.t=="ice"){if(pc.remoteDescription)pc.addIceCandidate(m.d).catch(function(){});else pq[id].push(m.d)}
+}
 /* ---------- host logic ---------- */
 function deal(){
 var d=shuffle(Array.from({length:40},function(_,i){return i}));
@@ -114,7 +175,7 @@ function lg(e){G.lg.push(e);if(G.lg.length>14)G.lg.shift()}
 function finish(w,m){G.ph="end";G.w=w;G.m=m;G.sc[w]++}
 function bc(){
 if(!host)return;
-S={p:G.p,i:G.i,h:G.h,t:G.t,v:G.v,ph:G.ph,w:G.w,m:G.m,sc:G.sc,lg:G.lg.slice(-10),ls:G.ls,sg:G.sg};
+S={p:G.p,i:G.i,h:G.h,t:G.t,v:G.v,ph:G.ph,w:G.w,m:G.m,sc:G.sc,lg:G.lg.slice(-10),ls:G.ls,sg:G.sg,ch:G.ch.slice(-14)};
 render();
 room.emit("s",S).catch(function(){});
 }
@@ -125,6 +186,7 @@ if(m.t=="join"){
 if(s<0&&G.ph=="lobby"){var f=G.i.indexOf("");if(f>=0){G.i[f]=m.c;G.p[f]=String(m.n||"لاعب").slice(0,12)}}
 bc();return}
 if(s<0)return;
+if(m.t=="chat"){var x=String(m.x||"").slice(0,80);if(x){G.ch.push({k:s,x:x,id:Date.now()+"-"+Math.random()});if(G.ch.length>30)G.ch.shift()}bc();return}
 if(G.ph=="lobby"){
 if(m.t=="bots"&&s==0){for(var q=1;q<4;q++)if(!G.i[q]){G.i[q]="bot"+q;G.p[q]="🤖 روبوت "+q}if(m.go)deal()}
 if(m.t=="start"&&s==0&&G.i.indexOf("")<0)deal();
@@ -159,26 +221,29 @@ m.c=cid;
 if(host){run(m);return}
 room.emit("a",m).catch(function(){err("ما عندكش صلاحية تلعب، لازم صاحب اللعبة يعمللك دعوة")});
 }
+function retry(){if(!room||host)return;connect().then(function(ok){if(ok){err("");act({t:"join",n:myName})}else setTimeout(retry,2000)})}
 async function connect(){
-var ws=new WebSocket((location.protocol=="https:"?"wss://":"ws://")+location.host),hs={};
-try{await new Promise(function(ok,no){ws.onopen=ok;ws.onerror=no})}catch(e){err("ما نجمناش نتصلو بالسيرفر");return false}
+var ws,hs={};
+try{ws=new WebSocket((location.protocol=="https:"?"wss://":"ws://")+location.host);await new Promise(function(ok,no){ws.onopen=ok;ws.onerror=no})}catch(e){err("ما نجمناش نتصلو بالسيرفر");return false}
 ws.onmessage=function(e){var m=JSON.parse(e.data);if(hs[m.topic])hs[m.topic]({data:m.data})};
-ws.onclose=function(){if(room)err("انقطع الاتصال، أعد تحميل الصفحة")};
+ws.onclose=function(){if(!room||host)return;err("انقطع الاتصال... نعاودو نتّصلو");setTimeout(retry,1500)};
 ws.send(JSON.stringify({join:"gamez-"+code}));
 room={emit:function(t,d){if(ws.readyState==1)ws.send(JSON.stringify({topic:t,data:d}));return Promise.resolve()},
 on:function(t,f){hs[t]=f},leave:function(){ws.close()}};
 room.on("s",function(m){if(!host){S=m.data;render()}});
 room.on("a",function(m){if(host&&m.data)run(m.data)});
+room.on("rtc",function(m){onRtc(m.data).catch(function(){})});
 return true;
 }
 async function mkGame(solo){
 myName=$("nm").value.trim()||"لاعب";code=String(1000+Math.floor(Math.random()*9000));
-if(!await connect()){
+if(await connect()){host=false;S=null;render();act({t:"join",n:myName,mk:1});if(solo)act({t:"bots",go:1});return}
+{
 if(!solo)return;
 err("");room={emit:function(){return Promise.resolve()},on:function(){},leave:function(){room=null}}; /* وضع بلا سيرفر: روبوتات فقط */
 }
 host=true;
-G={p:[myName,"","",""],i:[cid,"","",""],h:[[],[],[],[]],t:[],d:[],v:[0,0,0,0],ph:"lobby",w:-1,m:"",st:[0,0,0,0],sc:[0,0],lg:[],ls:-1};
+G={p:[myName,"","",""],i:[cid,"","",""],h:[[],[],[],[]],t:[],d:[],v:[0,0,0,0],ph:"lobby",w:-1,m:"",st:[0,0,0,0],sc:[0,0],lg:[],ls:-1,ch:[]};
 if(solo)run({t:"bots",c:cid,go:1});else bc();
 timer=setInterval(function(){bc();tick()},1200);
 }
@@ -219,7 +284,7 @@ h='<div class="hdr"><span class="scr">🏆 فريقنا <b>'+sc[t]+'</b> · <b>'
 if(S.ph=="lobby"){
 var n=S.i.filter(Boolean).length;
 h+='<div class="box"><p class="sm">كود اللعبة، ابعثو لصحابك</p><h1 style="margin:0">'+code+'</h1><div class="row">'+[0,1,2,3].map(function(k){return '<div class="pl'+(k==me?" me":"")+'">'+(S.p[k]||"…")+(k==me?" (إنت)":k%2==t?" (فريقك)":"")+"</div>"}).join("")+"</div><p>"+n+"/4 لاعبين</p>"+
-(me==0?'<button id="st" '+(n<4?"disabled":"")+'>ابدأ اللعبة</button><button id="bt" class="s">عمّر الباقي بروبوتات 🤖</button>':"<p>نستناو صاحب اللعبة يبدا…</p>")+"<p class=\"sm\">الفريقين: اللاعب 1 مع 3، واللاعب 2 مع 4 (اللي قدامك في الطاولة هو صاحبك)</p></div>";
+'<button id="sh" class="s">📤 ابعث الكود</button>'+(me==0?'<button id="st" '+(n<4?"disabled":"")+'>ابدأ اللعبة</button><button id="bt" class="s">عمّر الباقي بروبوتات 🤖</button>':"<p>نستناو صاحب اللعبة يبدا…</p>")+"<p class=\"sm\">الفريقين: اللاعب 1 مع 3، واللاعب 2 مع 4 (اللي قدامك في الطاولة هو صاحبك)</p></div>";
 }else if(S.ph=="end"){
 var win=S.w==t;
 h+='<div class="ban '+(win?"win":"lose")+'">'+(win?"ربحتو 🎉":"خسرتو")+'</div><div class="scp"><div>نقاطنا<b>'+sc[t]+'</b></div><div>نقاطهم<b>'+sc[1-t]+'</b></div></div><div class="msg">'+S.m+'</div><div class="row">'+
@@ -232,7 +297,7 @@ h+='<div class="room">'+seat(p,me,"top")+seat((me+1)%4,me,"left")+'<div class="t
 '<div class="seat bottom">'+av(me,me)+'<div class="nm">'+(S.p[me]||"")+' (إنت)</div><div class="hand">'+S.h[me].map(function(c){return card(c,c===sel?" sel":"")}).join("")+"</div></div></div>"+
 '<div class="row"><button id="vt" class="s">بدّل الطاولة ('+votes+'/4)</button><button id="gz">Gamez!</button><button id="cp" class="r">Coupez!</button></div>'+sgHtml(me)+'<p class="sm">اضغط ورقة من عندك ثم ورقة من الطاولة باش تبدّلهم</p>'+logHtml(me);
 }
-g.innerHTML=h;
+g.innerHTML=h;renderChat();
 }
 $("g").addEventListener("click",function(e){
 var c=e.target.closest("[data-c]"),id=e.target.id;
@@ -241,6 +306,7 @@ var v=Number(c.dataset.c),me=S.i.indexOf(cid);
 if(S.h[me].indexOf(v)>=0){sel=sel===v?null:v;render()}
 else if(sel!==null){act({t:"swap",h:sel,b:v});sel=null}
 return}
+if(id=="sh"){var u=location.origin+location.pathname+"?c="+code,tx="ادخل لعبة Gamez بالكود "+code+" "+u;if(navigator.share)navigator.share({text:tx}).catch(function(){});else if(navigator.clipboard)navigator.clipboard.writeText(tx).then(function(){toast("تنسخ ✅")})}
 if(id=="st")act({t:"start"});
 if(id=="bt")act({t:"bots"});
 if(id=="vt")act({t:"vote"});
@@ -249,6 +315,7 @@ if(id=="cp")act({t:"coupez"});
 if(id=="ag")act({t:"again"});
 if(id=="sg"){showSg=Date.now()+4000;render();setTimeout(render,4100)}
 });
+var qc=new URLSearchParams(location.search).get("c");if(qc)$("cd").value=qc.replace(/[^0-9]/g,"").slice(0,4);
 document.addEventListener("click",function(e){if(e.target.id=="hw")$("how").hidden=false;if(e.target.id=="hx")$("how").hidden=true});
 </script>
 </body>
