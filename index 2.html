@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gamez</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#0d3b46;--panel:rgba(255,255,255,.12);--ink:#fff;--card:#fffdf8;--cink:#1a1a1a;--red:#d12a2a;--gold:#f2b632}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#082a33;--card:#f1ede4}}
+:root[data-theme="dark"]{--bg:#082a33;--card:#f1ede4}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:radial-gradient(ellipse at top,#1d5f69,var(--bg) 70%) fixed;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;text-align:center;padding:12px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:9}
+h1{font-size:2.6rem;margin:14px 0 4px;color:var(--gold);letter-spacing:2px}
+.box{max-width:380px;margin:20px auto;background:var(--panel);border-radius:20px;padding:20px}
+input{width:100%;padding:13px;border-radius:12px;border:0;font-size:1rem;text-align:center;margin:6px 0}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 18px;margin:6px 4px;cursor:pointer;background:var(--gold);color:#222}
+button.s{background:var(--panel);color:var(--ink)}
+button.r{background:var(--red);color:#fff}
+button:disabled{opacity:.4}
+#er{color:#ffd0d0;min-height:1.3em;font-size:.9rem}
+.wrap{max-width:560px;margin:0 auto}
+.row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:8px 0}
+.pl{background:var(--panel);border-radius:14px;padding:8px 10px;min-width:100px;font-size:.85rem}
+.pl.me{outline:2px solid var(--gold)}
+.hdr{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hdr button{margin:0;padding:8px 12px}
+.scr{background:var(--panel);border-radius:20px;padding:7px 14px;font-weight:700;font-size:.9rem}
+.room{display:grid;grid-template-columns:78px 1fr 78px;grid-template-areas:"t t t" "l m r" "b b b";gap:8px 6px;align-items:center;margin:10px 0}
+.seat{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.8rem;min-width:0}
+.top{grid-area:t}.left{grid-area:l}.right{grid-area:r}.bottom{grid-area:b}
+.nm{font-weight:700;max-width:78px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bottom .nm{max-width:none}
+.tg{opacity:.7;font-size:.72rem}
+.av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;background:#33566a;border:3px solid var(--red)}
+.av.tm{border-color:var(--gold)}
+.bk{display:flex;gap:3px;justify-content:center;margin-top:4px;direction:ltr}
+.bk.v{flex-direction:column;gap:0;align-items:center}
+.b{width:16px;height:24px;border-radius:3px;background:repeating-linear-gradient(45deg,#7a1f1f,#7a1f1f 3px,#a52a2a 3px,#a52a2a 6px);border:1px solid #fff4}
+.bk.v .b{width:34px;height:20px;margin-top:-9px}.bk.v .b:first-child{margin-top:0}
+.tbl{grid-area:m;aspect-ratio:1;background:#f2efe6;border-radius:20px;box-shadow:0 8px 24px #0009,inset 0 0 0 6px #d8d3c4;display:grid;grid-template-columns:1fr 1fr;place-items:center;padding:14px;gap:6px}
+.tbl .cd{width:52px;height:74px;font-size:1.15rem}
+.hand{direction:ltr;display:flex;gap:8px;justify-content:center}
+.cd{width:68px;height:96px;border-radius:10px;background:var(--card);color:var(--cink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;cursor:pointer;box-shadow:0 3px 8px #0006;user-select:none;transition:transform .12s}
+.cd b{font-size:1.5rem}
+.pl .cd{width:40px;height:56px;font-size:1rem;border-radius:7px}
+.pl .cd b{font-size:1rem}
+.cd.rd{color:var(--red)}
+.cd.sel{transform:translateY(-12px);outline:3px solid var(--gold)}
+.cd.nw{outline:3px solid var(--gold);box-shadow:0 0 14px var(--gold)}
+.msg{background:var(--gold);color:#222;border-radius:12px;padding:10px;margin:8px 0;font-weight:700}
+.sm{font-size:.82rem;opacity:.85}
+.lg{background:rgba(0,0,0,.28);border-radius:14px;padding:8px 12px;text-align:right;font-size:.85rem;max-height:140px;overflow-y:auto;margin-top:8px}
+.le{padding:2px 0}.le.tm{color:#ffe08a}.le.op{color:#ffb4b4}
+.ban{display:inline-block;padding:10px 44px;border-radius:10px;font-size:1.8rem;font-weight:800;margin:10px 0;background:#b8222a}
+.ban.win{background:#1f8a4c}
+.scp{display:flex;justify-content:center;gap:30px;margin:8px 0}.scp div{background:var(--panel);border-radius:14px;padding:8px 22px}.scp b{display:block;font-size:1.8rem;color:var(--gold)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:20;display:flex;align-items:center;justify-content:center;padding:16px}
+.ov[hidden]{display:none}
+.ov .box{margin:0;max-height:90vh;overflow-y:auto;text-align:right;background:#12333b;line-height:1.8;font-size:.95rem}
+.ov ol{padding-right:20px;margin:6px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>GAMEZ</h1>
+<div id="menu" class="box">
+<p class="sm">لعبة ورق 2 ضد 2 · 40 ورقة (1 → 10) · 4 لاعبين أونلاين</p>
+<input id="nm" placeholder="إسمك" maxlength="12">
+<button id="mk">أنشئ لعبة</button>
+<button id="so" class="s">جرّب لوحدك ضد روبوتات 🤖</button>
+<hr style="border:0;border-top:1px solid #fff3;margin:12px 0">
+<input id="cd" placeholder="كود اللعبة (4 أرقام)" inputmode="numeric" maxlength="4">
+<button id="jn" class="s">ادخل للعبة</button>
+<button id="hw" class="s">؟ كيفاش تلعب</button>
+<p id="er"></p>
+</div>
+<div id="g"></div>
+</div>
+<div id="how" class="ov" hidden><div class="box">
+<h2 style="text-align:center;margin:0 0 6px;color:var(--gold)">كيفاش تلعب Gamez</h2>
+<ol>
+<li>كل واحد قاعد في ضلع من الطاولة. إنت وصاحبك (اللي قدّامك) فريق، ضدّ الزوز اللي على الجنب.</li>
+<li>كل واحد عندو <b>4 ورقات</b> (إنت وحدك تشوف متاعك). وفي الطاولة <b>4 ورقات مكشوفة</b>. الورق من 1 لـ 10.</li>
+<li>الهدف: واحد من فريقك يجمع <b>4 ورقات بنفس الرقم</b> (مثلا أربع 7).</li>
+<li>باش تبدّل: اضغط ورقة من يدك، وبعدها ورقة من الطاولة. تتبدّلو. الكل يلعب في نفس الوقت، ما فمّاش أدوار.</li>
+<li>كل تبديل يتكتب في <b>سجلّ الحركات</b>: شكون خذا شنوة وشكون خلّى شنوة. والورقة الأخيرة اللي تحطّت في الطاولة عليها ضو ذهبي.</li>
+<li>كان الورق اللي في الطاولة ما يفيد حتى واحد، الأربعة يضغطو <b>بدّل الطاولة</b> وتتبدّل بورق جديد.</li>
+<li>ما تنجمش تعلن على روحك: كان تشوف صاحبك يجمع في نفس الرقم (من اللي يخذو في السجلّ) واضغط <b>Gamez!</b>. كان صحيح فريقك يربح، وكان غالط يخسر.</li>
+<li>كان تشكّ إنّو واحد من الخصوم جمع 4 نفس الرقم، اضغط <b>Coupez!</b> (قطع). كان صحيح فريقك يربح، وكان غالط يخسر.</li>
+<li>نصيحة: لاحظ شكون يخذ نفس الرقم مرّة بعد مرّة، هذاكا يجمع فيه. وخلّي صاحبك يفهم رقمك بالورق اللي تخذو... من غير ما يفهمو الخصوم 😉</li>
+</ol>
+<div style="text-align:center"><button id="hx">فهمت</button></div>
+</div></div>
+
+<script>
+var R=["1","2","3","4","5","6","7","8","9","10"],SU=["♦","♥","♠","♣"];
+var room=null,host=false,G=null,S=null,sel=null,cid=Math.random().toString(36).slice(2,10),myName="",code="",timer=null;
+var $=function(i){return document.getElementById(i)};
+function err(t){$("er").textContent=t||""}
+function four(h){return h.length==4&&h.every(function(c){return c%10==h[0]%10})}
+function cs(c){return R[c%10]+SU[Math.floor(c/10)]}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+
+/* ---------- host logic ---------- */
+function deal(){
+var d=shuffle(Array.from({length:40},function(_,i){return i}));
+G.h=[d.splice(0,4),d.splice(0,4),d.splice(0,4),d.splice(0,4)];G.t=d.splice(0,4);G.d=d;G.v=[0,0,0,0];G.ph="play";G.w=-1;G.m="";G.st=[0,0,0,0];G.lg=[];G.ls=-1;
+}
+function lg(e){G.lg.push(e);if(G.lg.length>14)G.lg.shift()}
+function finish(w,m){G.ph="end";G.w=w;G.m=m;G.sc[w]++}
+function bc(){
+if(!host)return;
+S={p:G.p,i:G.i,h:G.h,t:G.t,v:G.v,ph:G.ph,w:G.w,m:G.m,sc:G.sc,lg:G.lg.slice(-10),ls:G.ls};
+render();
+room.emit("s",S).catch(function(){});
+}
+function run(m){
+var s=G.i.indexOf(m.c),me=s%2;
+if(m.t=="hello"){bc();return}
+if(m.t=="join"){
+if(s<0&&G.ph=="lobby"){var f=G.i.indexOf("");if(f>=0){G.i[f]=m.c;G.p[f]=String(m.n||"لاعب").slice(0,12)}}
+bc();return}
+if(s<0)return;
+if(G.ph=="lobby"){
+if(m.t=="bots"&&s==0){for(var q=1;q<4;q++)if(!G.i[q]){G.i[q]="bot"+q;G.p[q]="🤖 روبوت "+q}if(m.go)deal()}
+if(m.t=="start"&&s==0&&G.i.indexOf("")<0)deal();
+bc();return}
+if(G.ph=="end"){if(m.t=="again"&&s==0)deal();bc();return}
+if(m.t=="swap"){var a=G.h[s].indexOf(m.h),b=G.t.indexOf(m.b);if(a>=0&&b>=0){G.h[s][a]=m.b;G.t[b]=m.h;G.v=[0,0,0,0];G.ls=m.h;lg({k:s,t:"swap",a:m.b,b:m.h})}}
+if(m.t=="vote"){if(!G.v[s])lg({k:s,t:"vote"});G.v[s]=1;if(G.v.every(Boolean)){G.d=G.d.concat(G.t);G.t=G.d.splice(0,4);G.v=[0,0,0,0];G.ls=-1;lg({k:-1,t:"new"})}}
+if(m.t=="gamez"){var ok=four(G.h[(s+2)%4]);finish(ok?me:1-me,G.p[s]+" قال Gamez "+(ok?"وكان صحيح ✅":"وكان غالط ❌"))}
+if(m.t=="coupez"){var hit=[0,1,2,3].some(function(k){return k%2!=me&&four(G.h[k])});finish(hit?me:1-me,G.p[s]+" قال Coupez "+(hit?"وكان صحيح ✅":"وكان غالط ❌"))}
+bc();
+}
+
+function tick(){
+if(!host||G.ph!="play")return;
+[0,1,2,3].forEach(function(k){
+if(G.ph!="play"||G.i[k].slice(0,3)!="bot")return;
+var h=G.h[k],cnt={},best=h[0]%10;
+h.forEach(function(c){cnt[c%10]=(cnt[c%10]||0)+1});
+for(var r in cnt)if(cnt[r]>cnt[best])best=Number(r);
+if(four(G.h[(k+2)%4])&&Math.random()<.35){run({t:"gamez",c:G.i[k]});return}
+if([0,1,2,3].some(function(j){return j%2!=k%2&&four(G.h[j])})&&Math.random()<.12){run({t:"coupez",c:G.i[k]});return}
+if(Math.random()<.45)return;
+var off=h.filter(function(c){return c%10!=best}),want=G.t.filter(function(c){return c%10==best});
+if(off.length&&want.length){G.st[k]=0;run({t:"swap",c:G.i[k],h:off[0],b:want[0]})}
+else if(++G.st[k]>3)run({t:"vote",c:G.i[k]});
+});
+}
+
+/* ---------- network ---------- */
+function act(m){
+m.c=cid;
+if(host){run(m);return}
+room.emit("a",m).catch(function(){err("ما عندكش صلاحية تلعب، لازم صاحب اللعبة يعمللك دعوة")});
+}
+async function connect(){
+var ws=new WebSocket((location.protocol=="https:"?"wss://":"ws://")+location.host),hs={};
+try{await new Promise(function(ok,no){ws.onopen=ok;ws.onerror=no})}catch(e){err("ما نجمناش نتصلو بالسيرفر");return false}
+ws.onmessage=function(e){var m=JSON.parse(e.data);if(hs[m.topic])hs[m.topic]({data:m.data})};
+ws.onclose=function(){if(room)err("انقطع الاتصال، أعد تحميل الصفحة")};
+ws.send(JSON.stringify({join:"gamez-"+code}));
+room={emit:function(t,d){if(ws.readyState==1)ws.send(JSON.stringify({topic:t,data:d}));return Promise.resolve()},
+on:function(t,f){hs[t]=f},leave:function(){ws.close()}};
+room.on("s",function(m){if(!host){S=m.data;render()}});
+room.on("a",function(m){if(host&&m.data)run(m.data)});
+return true;
+}
+async function mkGame(solo){
+myName=$("nm").value.trim()||"لاعب";code=String(1000+Math.floor(Math.random()*9000));
+if(!await connect()){
+if(!solo)return;
+err("");room={emit:function(){return Promise.resolve()},on:function(){},leave:function(){room=null}}; /* وضع بلا سيرفر: روبوتات فقط */
+}
+host=true;
+G={p:[myName,"","",""],i:[cid,"","",""],h:[[],[],[],[]],t:[],d:[],v:[0,0,0,0],ph:"lobby",w:-1,m:"",st:[0,0,0,0],sc:[0,0],lg:[],ls:-1};
+if(solo)run({t:"bots",c:cid,go:1});else bc();
+timer=setInterval(function(){bc();tick()},1200);
+}
+$("mk").onclick=function(){mkGame(0)};$("so").onclick=function(){mkGame(1)};
+$("jn").onclick=async function(){
+myName=$("nm").value.trim()||"لاعب";code=$("cd").value.trim();
+if(code.length!=4){err("دخّل كود من 4 أرقام");return}
+if(!await connect())return;
+S=null;render();
+var tries=0,t=setInterval(function(){
+if(S&&S.i.indexOf(cid)>=0||++tries>20){clearInterval(t);if(!S)leave("ما لقيناش اللعبة، تأكد من الكود")}
+else act({t:"join",n:myName})},1500);
+act({t:"join",n:myName});
+};
+function leave(t){if(room)room.leave();room=null;S=null;$("g").innerHTML="";$("menu").style.display="";err(t)}
+
+/* ---------- UI ---------- */
+function card(c,x){var s=Math.floor(c/10);return '<div class="cd'+(s<2?" rd":"")+(x||"")+'" data-c="'+c+'">'+R[c%10]+"<b>"+SU[s]+"</b></div>"}
+function backs(n,pos){return '<div class="bk'+(pos=="top"?"":" v")+'">'+'<span class="b"></span>'.repeat(n)+"</div>"}
+function av(k,me){var n=S.p[k]||"…",bot=(S.i[k]||"").slice(0,3)=="bot";return '<div class="av'+(k%2==me%2?" tm":"")+'">'+(bot?"🤖":(Array.from(n)[0]||"?"))+"</div>"}
+function seat(k,me,pos){return '<div class="seat '+pos+'">'+av(k,me)+'<div class="nm">'+(S.p[k]||"…")+'</div><div class="tg">'+(k%2==me%2?"صاحبك":"خصم")+"</div>"+backs(4,pos)+"</div>"}
+function lt(e,me){var w=e.k==me?"إنت":(S.p[e.k]||"");
+if(e.t=="swap")return w+" خذا "+cs(e.a)+" وخلّى "+cs(e.b);
+if(e.t=="vote")return w+" يحب يبدّل الطاولة";
+return "🔄 الطاولة تبدّلت"}
+function logHtml(me){var l=(S.lg||[]).slice().reverse();
+return '<div class="lg"><b class="sm">📜 سجلّ الحركات</b>'+(l.length?l.map(function(e){return '<div class="le '+(e.k<0?"":e.k%2==me%2?"tm":"op")+'">'+lt(e,me)+"</div>"}).join(""):'<div class="sm">باش تتكتب هوني كل حركة…</div>')+"</div>"}
+function render(){
+if(!room)return;
+$("menu").style.display="none";
+var g=$("g");
+if(!S){g.innerHTML='<p>جاري الاتصال…</p>';return}
+var me=S.i.indexOf(cid);
+if(me<0){g.innerHTML="<p>جاري الدخول…</p>";return}
+var t=me%2,sc=S.sc||[0,0],
+h='<div class="hdr"><span class="scr">🏆 فريقنا <b>'+sc[t]+'</b> · <b>'+sc[1-t]+'</b> فريقهم</span><button id="hw" class="s">؟ كيفاش تلعب</button></div>';
+if(S.ph=="lobby"){
+var n=S.i.filter(Boolean).length;
+h+='<div class="box"><p class="sm">كود اللعبة، ابعثو لصحابك</p><h1 style="margin:0">'+code+'</h1><div class="row">'+[0,1,2,3].map(function(k){return '<div class="pl'+(k==me?" me":"")+'">'+(S.p[k]||"…")+(k==me?" (إنت)":k%2==t?" (فريقك)":"")+"</div>"}).join("")+"</div><p>"+n+"/4 لاعبين</p>"+
+(me==0?'<button id="st" '+(n<4?"disabled":"")+'>ابدأ اللعبة</button><button id="bt" class="s">عمّر الباقي بروبوتات 🤖</button>':"<p>نستناو صاحب اللعبة يبدا…</p>")+"<p class=\"sm\">الفريقين: اللاعب 1 مع 3، واللاعب 2 مع 4 (اللي قدامك في الطاولة هو صاحبك)</p></div>";
+}else if(S.ph=="end"){
+var win=S.w==t;
+h+='<div class="ban '+(win?"win":"lose")+'">'+(win?"ربحتو 🎉":"خسرتو")+'</div><div class="scp"><div>نقاطنا<b>'+sc[t]+'</b></div><div>نقاطهم<b>'+sc[1-t]+'</b></div></div><div class="msg">'+S.m+'</div><div class="row">'+
+[0,1,2,3].map(function(k){return '<div class="pl'+(k%2==t?" me":"")+'">'+(S.p[k]||"")+(k%2==t?" (فريقنا)":"")+'<div class="hand" style="gap:3px;margin-top:6px">'+S.h[k].map(function(c){return card(c,"")}).join("")+"</div></div>"}).join("")+"</div>"+
+(me==0?'<button id="ag">🔁 لعبة أخرى</button>':'<p class="sm">نستناو صاحب اللعبة…</p>')+logHtml(me);
+}else{
+var p=(me+2)%4,votes=S.v.reduce(function(a,b){return a+b},0);
+if(sel!==null&&S.h[me].indexOf(sel)<0)sel=null;
+h+='<div class="room">'+seat(p,me,"top")+seat((me+1)%4,me,"left")+'<div class="tbl">'+S.t.map(function(c){return card(c,c===S.ls?" nw":"")}).join("")+"</div>"+seat((me+3)%4,me,"right")+
+'<div class="seat bottom">'+av(me,me)+'<div class="nm">'+(S.p[me]||"")+' (إنت)</div><div class="hand">'+S.h[me].map(function(c){return card(c,c===sel?" sel":"")}).join("")+"</div></div></div>"+
+'<div class="row"><button id="vt" class="s">بدّل الطاولة ('+votes+'/4)</button><button id="gz">Gamez!</button><button id="cp" class="r">Coupez!</button></div><p class="sm">اضغط ورقة من عندك ثم ورقة من الطاولة باش تبدّلهم</p>'+logHtml(me);
+}
+g.innerHTML=h;
+}
+$("g").addEventListener("click",function(e){
+var c=e.target.closest("[data-c]"),id=e.target.id;
+if(c&&S&&S.ph=="play"){
+var v=Number(c.dataset.c),me=S.i.indexOf(cid);
+if(S.h[me].indexOf(v)>=0){sel=sel===v?null:v;render()}
+else if(sel!==null){act({t:"swap",h:sel,b:v});sel=null}
+return}
+if(id=="st")act({t:"start"});
+if(id=="bt")act({t:"bots"});
+if(id=="vt")act({t:"vote"});
+if(id=="gz")act({t:"gamez"});
+if(id=="cp")act({t:"coupez"});
+if(id=="ag")act({t:"again"});
+});
+document.addEventListener("click",function(e){if(e.target.id=="hw")$("how").hidden=false;if(e.target.id=="hx")$("how").hidden=true});
+</script>
+</body>
+</html>
