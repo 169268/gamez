@@ -89,7 +89,7 @@ button:disabled{opacity:.4}
 <li>كل تبديل يتكتب في <b>سجلّ الحركات</b>: شكون خذا شنوة وشكون خلّى شنوة. والورقة الأخيرة اللي تحطّت في الطاولة عليها ضو ذهبي.</li>
 <li>كان الورق اللي في الطاولة ما يفيد حتى واحد، الأربعة يضغطو <b>بدّل الطاولة</b> وتتبدّل بورق جديد.</li>
 <li>ما تنجمش تعلن على روحك: كان تشوف صاحبك يجمع في نفس الرقم (من اللي يخذو في السجلّ) واضغط <b>Gamez!</b>. كان صحيح فريقك يربح، وكان غالط يخسر.</li>
-<li>كان تشكّ إنّو واحد من الخصوم جمع 4 نفس الرقم، اضغط <b>Coupez!</b> (قطع). كان صحيح فريقك يربح، وكان غالط يخسر.</li>
+<li><b>الإشارة السرّية:</b> في بداية كل دورة، كل فريق ياخذ إشارة سرّية (مثلا "حكّ راسك"). كي تجمع 4 نفس الرقم، اعمل الإشارة بلا ما يشوفك الخصوم. وكي صاحبك يشوفها يضغط Gamez!. كان الخصوم لاحظو، يلحقو يعملو Coupez. اضغط 🤫 باش تشوف إشارتك (تتخبّى بعد 4 ثواني).</li><li>كان تشكّ إنّو واحد من الخصوم جمع 4 نفس الرقم، اضغط <b>Coupez!</b> (قطع). كان صحيح فريقك يربح، وكان غالط يخسر.</li>
 <li>نصيحة: لاحظ شكون يخذ نفس الرقم مرّة بعد مرّة، هذاكا يجمع فيه. وخلّي صاحبك يفهم رقمك بالورق اللي تخذو... من غير ما يفهمو الخصوم 😉</li>
 </ol>
 <div style="text-align:center"><button id="hx">فهمت</button></div>
@@ -97,6 +97,7 @@ button:disabled{opacity:.4}
 
 <script>
 var R=["1","2","3","4","5","6","7","8","9","10"],SU=["♦","♥","♠","♣"];
+var GS=["حكّ راسك","حطّ يدك على بوزك","تنحنح","غمّز بعينك اليمنى","حطّ يدك على كتفك","حرّك رجلك","خبّط بصباعك على الطاولة مرتين","عضّ شفتك","ابتسم ابتسامة صغيرة","حكّ ودنك"],showSg=0;
 var room=null,host=false,G=null,S=null,sel=null,cid=Math.random().toString(36).slice(2,10),myName="",code="",timer=null;
 var $=function(i){return document.getElementById(i)};
 function err(t){$("er").textContent=t||""}
@@ -107,13 +108,13 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
 /* ---------- host logic ---------- */
 function deal(){
 var d=shuffle(Array.from({length:40},function(_,i){return i}));
-G.h=[d.splice(0,4),d.splice(0,4),d.splice(0,4),d.splice(0,4)];G.t=d.splice(0,4);G.d=d;G.v=[0,0,0,0];G.ph="play";G.w=-1;G.m="";G.st=[0,0,0,0];G.lg=[];G.ls=-1;
+G.h=[d.splice(0,4),d.splice(0,4),d.splice(0,4),d.splice(0,4)];G.t=d.splice(0,4);G.d=d;G.v=[0,0,0,0];G.ph="play";G.w=-1;G.m="";G.st=[0,0,0,0];G.lg=[];G.ls=-1;var gs=shuffle(GS.slice());G.sg=[gs[0],gs[1]];
 }
 function lg(e){G.lg.push(e);if(G.lg.length>14)G.lg.shift()}
 function finish(w,m){G.ph="end";G.w=w;G.m=m;G.sc[w]++}
 function bc(){
 if(!host)return;
-S={p:G.p,i:G.i,h:G.h,t:G.t,v:G.v,ph:G.ph,w:G.w,m:G.m,sc:G.sc,lg:G.lg.slice(-10),ls:G.ls};
+S={p:G.p,i:G.i,h:G.h,t:G.t,v:G.v,ph:G.ph,w:G.w,m:G.m,sc:G.sc,lg:G.lg.slice(-10),ls:G.ls,sg:G.sg};
 render();
 room.emit("s",S).catch(function(){});
 }
@@ -205,6 +206,7 @@ if(e.t=="vote")return w+" يحب يبدّل الطاولة";
 return "🔄 الطاولة تبدّلت"}
 function logHtml(me){var l=(S.lg||[]).slice().reverse();
 return '<div class="lg"><b class="sm">📜 سجلّ الحركات</b>'+(l.length?l.map(function(e){return '<div class="le '+(e.k<0?"":e.k%2==me%2?"tm":"op")+'">'+lt(e,me)+"</div>"}).join(""):'<div class="sm">باش تتكتب هوني كل حركة…</div>')+"</div>"}
+function sgHtml(me){var g=S.sg&&S.sg[me%2];if(!g)return"";var on=Date.now()<showSg;return '<div class="msg" style="background:var(--panel);color:var(--ink)">'+(on?'🤫 إشارة فريقك: <b>'+g+'</b>':'<button id="sg" class="s">🤫 شوف إشارة فريقك السرّية</button>')+"</div>"}
 function render(){
 if(!room)return;
 $("menu").style.display="none";
@@ -228,7 +230,7 @@ var p=(me+2)%4,votes=S.v.reduce(function(a,b){return a+b},0);
 if(sel!==null&&S.h[me].indexOf(sel)<0)sel=null;
 h+='<div class="room">'+seat(p,me,"top")+seat((me+1)%4,me,"left")+'<div class="tbl">'+S.t.map(function(c){return card(c,c===S.ls?" nw":"")}).join("")+"</div>"+seat((me+3)%4,me,"right")+
 '<div class="seat bottom">'+av(me,me)+'<div class="nm">'+(S.p[me]||"")+' (إنت)</div><div class="hand">'+S.h[me].map(function(c){return card(c,c===sel?" sel":"")}).join("")+"</div></div></div>"+
-'<div class="row"><button id="vt" class="s">بدّل الطاولة ('+votes+'/4)</button><button id="gz">Gamez!</button><button id="cp" class="r">Coupez!</button></div><p class="sm">اضغط ورقة من عندك ثم ورقة من الطاولة باش تبدّلهم</p>'+logHtml(me);
+'<div class="row"><button id="vt" class="s">بدّل الطاولة ('+votes+'/4)</button><button id="gz">Gamez!</button><button id="cp" class="r">Coupez!</button></div>'+sgHtml(me)+'<p class="sm">اضغط ورقة من عندك ثم ورقة من الطاولة باش تبدّلهم</p>'+logHtml(me);
 }
 g.innerHTML=h;
 }
@@ -245,6 +247,7 @@ if(id=="vt")act({t:"vote"});
 if(id=="gz")act({t:"gamez"});
 if(id=="cp")act({t:"coupez"});
 if(id=="ag")act({t:"again"});
+if(id=="sg"){showSg=Date.now()+4000;render();setTimeout(render,4100)}
 });
 document.addEventListener("click",function(e){if(e.target.id=="hw")$("how").hidden=false;if(e.target.id=="hx")$("how").hidden=true});
 </script>
